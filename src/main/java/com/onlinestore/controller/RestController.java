@@ -7,6 +7,7 @@ import com.onlinestore.service.UserServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class RestController {
 
     @GetMapping("/v1/users")
     @JsonView(Views.UserSummary.class)
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<User>>getAllUsers() {
         List<User> users = service.getUserList();
         if (users != null) {
             return new ResponseEntity<>(users, HttpStatus.OK);
@@ -43,9 +44,13 @@ public class RestController {
     }
 
     @PostMapping("/v1/user/new")
-    public ResponseEntity<User> createUser(@RequestParam String name, String phone, String email) {
-        User newUser = service.createUser(name, phone, email);
-        return new ResponseEntity<>(newUser, HttpStatus.OK);
+    public ResponseEntity<Object> createUser(@RequestParam String name, String phone, String email) {
+        try {
+            User newUser = service.createUser(name, phone, email);
+            return new ResponseEntity<>(newUser, HttpStatus.CREATED);
+        } catch (UserServiceImpl.InvalidException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @DeleteMapping("/v1/user/delete/{id}")
@@ -55,10 +60,15 @@ public class RestController {
     }
 
     @PatchMapping("/v1/user/update/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable("id") int id,
-                                           @RequestParam (required = false) String name,
-                                           @RequestParam (required = false) String phone,
-                                           @RequestParam (required = false) String email) {
-        return new ResponseEntity<>(HttpStatus.OK); //обновление полей? уточнить
+    public ResponseEntity<Object> updateUser(@PathVariable("id") int id,
+                                             @RequestParam(required = false) String name,
+                                             @RequestParam(required = false) String phone,
+                                             @RequestParam(required = false) String email) {
+        try {
+            service.updateUser(id, name, phone, email);
+            return new ResponseEntity<>(service.getUserInfo(id), HttpStatus.OK);
+        } catch (UserServiceImpl.InvalidException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.UNAUTHORIZED);
+        }
     }
 }

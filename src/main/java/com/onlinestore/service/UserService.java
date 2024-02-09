@@ -10,9 +10,9 @@ public interface UserService {
 
     User getUserInfo(int id);
 
-    User createUser(String name, String phone, String email);
+    User createUser(String name, String phone, String email) throws Exception;
 
     void deleteUser(int id);
 
-    void updateUser(int id, String name, String phone, String email);
+    void updateUser(int id, String name, String phone, String email) throws Exception;
 }
